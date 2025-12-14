@@ -1,0 +1,25 @@
+{
+  "name": "superduperannotate",
+  "version": "0.0.0",
+  "description": "",
+  "author": "Luis Guerra <luis.guerra.rosa@outlook.com>",
+  "license": "ISC",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -cw"
+  },
+  "dependencies": {
+    "solid-js": "^1.9.10"
+  },
+  "devDependencies": {
+    "@rollup/plugin-babel": "^6.1.0",
+    "@rollup/plugin-typescript": "^12.3.0",
+    "babel-preset-solid": "^1.9.10",
+    "rollup": "^4.53.3",
+    "tslib": "^2.8.1",
+    "typescript": "^5.9.3"
+  }
+}
