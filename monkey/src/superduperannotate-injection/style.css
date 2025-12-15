@@ -1,0 +1,6 @@
+/* global css */
+/* Note: might conflict with existing styles if not in shadow DOM */
+
+* {
+    outline: 1px solid red !important;
+}

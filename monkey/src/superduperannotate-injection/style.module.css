@@ -1,0 +1,6 @@
+/* Preflights are needed for default values of variables */
+@unocss preflights;
+
+.title {
+  @apply text-orange-500;
+}
