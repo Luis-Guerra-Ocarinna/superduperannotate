@@ -63,6 +63,7 @@ export default defineConfig(
       },
       indent: false,
     },
+    preserveSymlinks: true,
   })),
 );
 
@@ -77,7 +78,3 @@ function defineExternal(externals) {
       return id === pattern || id.startsWith(pattern + '/');
     });
 }
-
-// BUG: (!) Unresolved dependencies @babel/runtime/helpers/esm/extends (imported by "../node_modules/solid-js/dist/solid.js")
-// when watching build, after the first run it disappears
-// it is all working, but is needed to find a way to depends on local lib correctly  
