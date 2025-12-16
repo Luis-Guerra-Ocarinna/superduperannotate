@@ -1,0 +1,113 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "dev",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "npm: dev",
+			"presentation": {
+				"echo": true,
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+				"focus": false,
+				"panel": "dedicated",
+				"showReuseMessage": true,
+				"clear": false,
+				"group": "dev",
+			},
+		},
+		{
+			"type": "npm",
+			"script": "dev",
+			"path": "monkey",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "(monkey) npm: dev",
+			"presentation": {
+				"echo": true,
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+				"focus": false,
+				"panel": "dedicated",
+				"showReuseMessage": true,
+				"clear": false,
+				"group": "dev",
+			},
+		},
+		{
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"--yes",
+				"http-server",
+				"./dist",
+				"-p",
+				"3003",
+			],
+			"options": {
+				"cwd": "${cwd}/monkey",
+			},
+			"problemMatcher": [],
+			"label": "(monkey) dev serve",
+			"presentation": {
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+				"panel": "dedicated",
+				"clear": true,
+				"group": "dev",
+			},
+		},
+		{
+			"label": "clear dist",
+			"type": "shell",
+			"command": "rm",
+			"args": [
+				"-r",
+				"${cwd}/dist",
+				"||",
+				"echo",
+				"0",
+			],
+			"problemMatcher": [],
+			"presentation": {
+				"echo": false,
+				"reveal": "silent",
+				"close": true,
+			},
+		},
+		{
+			"label": "(monkey) clear dist",
+			"type": "shell",
+			"command": "rm",
+			"args": [
+				"-r",
+				"${cwd}/monkey/dist",
+				"||",
+				"echo",
+				"0",
+			],
+			"problemMatcher": [],
+			"presentation": {
+				"echo": false,
+				"reveal": "silent",
+				"close": true,
+			},
+		},
+		{
+			"label": "Dev",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"dependsOn": [
+				"clear dist",
+				"(monkey) clear dist",
+				"npm: dev",
+				"(monkey) npm: dev",
+				"(monkey) dev serve",
+			],
+		},
+	]
+}

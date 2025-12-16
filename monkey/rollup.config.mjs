@@ -46,9 +46,12 @@ export default defineConfig(
       resolvePlugin({ browser: false, extensions }),
       commonjsPlugin(),
       jsonPlugin(),
-      userscript((meta) =>
-        meta.replace('process.env.AUTHOR', packageJson.author.name),
-      ),
+      userscript((meta) => {
+        if (process.env.ROLLUP_WATCH)
+          meta = meta.replace(/^(.*@match\s+)/m, '$1*://localhost:*/*\n$1')
+
+        return meta.replace('process.env.AUTHOR', packageJson.author.name)
+      }),
     ],
     external: defineExternal([
       '@violentmonkey/ui',

@@ -20,6 +20,8 @@ function Wrapper() {
 }
 
 // Inject CSS
+const randomHue = Math.floor(Math.random() * 360);
+unsafeWindow.document.documentElement.style.setProperty('--random-hue', randomHue + 'deg');
 GM.addStyle(globalCss);
 
 const panel = getPanel({
