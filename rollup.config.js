@@ -1,6 +1,9 @@
 import babel from '@rollup/plugin-babel'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
+import { globSync } from 'glob'
+import { extname, relative } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const extensions = ['.js', '.jsx', '.ts', '.tsx']
 
@@ -17,7 +20,12 @@ const plugins = [
 export default [
     // lib
     {
-        input: 'src/index.tsx',
+        input: Object.fromEntries(
+            globSync(`src/**/*{${extensions.join(',')}}`).map(file => [
+                relative('src', file.slice(0, file.length - extname(file).length)),
+                fileURLToPath(new URL(file, import.meta.url))
+            ])
+        ),
         output: [
             {
                 dir: 'dist',
@@ -35,8 +43,8 @@ export default [
                 extensions,
                 babelHelpers: 'runtime',
                 plugins: [
-                    ['@babel/plugin-transform-runtime']
-                ]
+                    ['@babel/plugin-transform-runtime'],
+                ],
             }),
         ],
         external: ['solid-js', 'solid-js/web'],
