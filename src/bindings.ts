@@ -120,7 +120,7 @@ export class Bind {
     hash(): BindHash { return this.toString() }
 }
 
-export class Keybindings {
+export class BindingManager { 
     private _binds: Binds = new Map()
     get binds(): ReadOnlyBinds { return this._binds }
 
