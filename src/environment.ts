@@ -14,6 +14,10 @@ export abstract class Storage {
 
 // TODO: make it deeply reactive to auto-save itself
 export class Config {
+    customCode: string | undefined
+
+    // TODO: better way to save bindings
+    // for now just saving in custom code
 
     constructor(private _storage: Storage) {
         this.load()
