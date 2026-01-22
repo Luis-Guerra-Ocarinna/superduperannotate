@@ -137,6 +137,7 @@ export class BindingManager {
         this.setBath(binds)
     }
 
+    // TODO: avoid writable elements
     listen(element: HTMLElement) {
         const handle = (event: KeyboardEvent | MouseEvent) => {
             let bind

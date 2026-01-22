@@ -9,8 +9,8 @@ export function runCustomCode(config: Config, dependencies: Record<string, any>)
 
     if (!code) return
 
-    return Function(...[
+    Function(...[
         ...Object.keys(dependencies),
-        `return (${code});`
+        code
     ])(...Object.values(dependencies))
 }
