@@ -12,6 +12,25 @@ export abstract class Storage {
     public abstract remove(key: string): void
 }
 
+export class LogStorage extends Storage {
+    private static _storage: Record<string, string> = {}
+
+    public get(key: string): string | undefined {
+        console.debug('getting from store', { key, _prefix: this.prefix })
+        return LogStorage._storage[this.prefix + '-' + key]
+    }
+
+    public set(key: string, value: string): void {
+        console.debug('setting to the store', { key, value, _prefix: this.prefix })
+        LogStorage._storage[this.prefix + '-' + key] = value
+    }
+
+    public remove(key: string): void {
+        console.debug('removing from store', { key, _prefix: this.prefix })
+        delete LogStorage._storage[this.prefix + '-' + key]
+    }
+}
+
 // TODO: make it deeply reactive to auto-save itself
 export class Config {
     customCode: string | undefined
@@ -19,18 +38,20 @@ export class Config {
     // TODO: better way to save bindings
     // for now just saving in custom code
 
-    constructor(private _storage: Storage) {
+    #storage: Storage
+    constructor(storage: Storage) {
+        this.#storage = storage
         this.load()
     }
 
     load() {
         for (const key in this) {
             if (!Object.hasOwn(this, key)) continue
-            const value = this._storage.get(key)
+            const value = this.#storage.get(key)
 
             // since it has default values defined in class,
             // probably it will never be undefined (unless the storage is changed manually)
-            if (!value) continue
+            if (value === undefined) continue
 
             this[key] = JSON.parse(value)
         }
@@ -41,7 +62,7 @@ export class Config {
             if (!Object.hasOwn(this, key)) continue
             const value = this[key]
 
-            this._storage.set(key, JSON.stringify(value))
+            this.#storage.set(key, JSON.stringify(value))
         }
     }
 }
