@@ -1,0 +1,92 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "dev",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "npm: dev",
+			"presentation": {
+				"echo": true,
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+				"focus": false,
+				"panel": "dedicated",
+				"showReuseMessage": true,
+				"clear": false,
+				"group": "dev",
+			},
+		},
+		{
+			"type": "shell",
+			"group": "build",
+			"windows": {
+				"command": "cmd",
+				"args": [
+					"/c",
+					"if not exist dist mkdir dist && if not exist dist\\scr mklink /J dist\\src src"
+				]
+			},
+			"label": "dev build+",
+			"detail": "Symlink source files into dist/src for debugging",
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "silent",
+				"group": "dev",
+				"close": true,
+			}
+		},
+		{
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"--yes",
+				"http-server",
+				"./dist",
+				"-p",
+				"3003",
+			],
+			"problemMatcher": [],
+			"label": "dev serve",
+			"presentation": {
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+				"panel": "dedicated",
+				"clear": true,
+				"group": "dev",
+			},
+		},
+		{
+			"label": "clear dist",
+			"type": "shell",
+			"command": "rm",
+			"args": [
+				"-r",
+				"${cwd}/dist",
+				"||",
+				"echo",
+				"0",
+			],
+			"problemMatcher": [],
+			"presentation": {
+				"echo": false,
+				"reveal": "silent",
+				"close": true,
+			},
+		},
+		{
+			"label": "Dev",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"dependsOn": [
+				"clear dist",
+				"npm: dev",
+				"dev build+",
+				"dev serve",
+			],
+		},
+	]
+}
