@@ -38,6 +38,25 @@
 		},
 		{
 			"type": "shell",
+			"group": "build",
+			"windows": {
+				"command": "cmd",
+				"args": [
+					"/c",
+					"if not exist dist mkdir dist && if not exist dist\\scr mklink /J dist\\src src"
+				]
+			},
+			"label": "dev build+",
+			"detail": "Symlink source files into dist/src for debugging",
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "silent",
+				"group": "dev",
+				"close": true,
+			}
+		},
+		{
+			"type": "shell",
 			"command": "npx",
 			"args": [
 				"--yes",
@@ -45,6 +64,26 @@
 				"./dist",
 				"-p",
 				"3003",
+			],
+			"problemMatcher": [],
+			"label": "dev serve",
+			"presentation": {
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+				"panel": "dedicated",
+				"clear": true,
+				"group": "dev",
+			},
+		},
+		{
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"--yes",
+				"http-server",
+				"./dist",
+				"-p",
+				"3004",
 			],
 			"options": {
 				"cwd": "${cwd}/monkey",

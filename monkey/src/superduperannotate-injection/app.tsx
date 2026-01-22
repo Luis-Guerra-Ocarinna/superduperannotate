@@ -1,6 +1,6 @@
 import * as assistant from 'superduperannotate/assistant'
 import * as extensions from 'superduperannotate/extensions'
-import { Bind, Keybindings } from 'superduperannotate/keybindings'
+import { Bind, BindingManager } from 'superduperannotate/bindings'
 import { sleep } from 'superduperannotate/utils'
 
 type HTML<K extends keyof HTMLElementTagNameMap | void = void> =
@@ -8,7 +8,7 @@ type HTML<K extends keyof HTMLElementTagNameMap | void = void> =
   ? HTMLElementTagNameMap[K]
   : HTMLElement
 
-const KBS = new Keybindings({
+const binds = new BindingManager({
   'A -b': extensions.panels.toggleRight,
 
   'C -t': extensions.panels.selectTags,
@@ -88,9 +88,9 @@ export async function main() {
     }
   })
 
-  KBS.listen(document.body)
+  binds.listen(document.body)
 
-  KBS.set(new Bind().ctrl().key('-D'), async () => {
+  binds.set(new Bind().ctrl().key('-D'), async () => {
     extensions.panels.selectObjects()
     await sleep(50)
 
@@ -101,7 +101,7 @@ export async function main() {
   })
 
   // cycle class visibility
-  KBS.set('A -q', () => {
+  binds.set('A -q', () => {
     const $eyes = document.querySelectorAll<HTML>('app-right-panel virtual-scroller object-class-group sn-icon[data-qa-id=class-group-visibility-button]').values()
     for (const $eye of $eyes) {
       if ($eye.querySelector('use[*|href$=open]')) {
@@ -139,7 +139,7 @@ export async function main() {
   }
 
   // copy image name
-  KBS.set('A -c', async () => {
+  binds.set('A -c', async () => {
     const imgName = decodeURIComponent(
       new URL(document.querySelector<HTML<'img'>>('img[src*=photo_]').src)
         .pathname
@@ -156,7 +156,7 @@ export async function main() {
 
   // copy image
   // NOTE: needs a local proxy
-  KBS.set('A -C', async () => {
+  binds.set('A -C', async () => {
     const fetchProxied = (url: string) => fetch('http://localhost:3000/?target=' + encodeURIComponent(url), { method: 'GET' })
 
     try {
@@ -182,4 +182,4 @@ export async function main() {
   })
 }
 
-unsafeWindow['KEYBINDINGS'] = KBS
+unsafeWindow['BINDS'] = binds

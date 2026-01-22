@@ -30,7 +30,7 @@ export default [
             {
                 dir: 'dist',
                 format: 'esm',
-                sourcemap: true, // TODO: export src to the browser too
+                sourcemap: true,
                 preserveModules: true,
                 preserveModulesRoot: 'src',
             },

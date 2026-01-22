@@ -45,3 +45,8 @@ export class TypedEventTarget<TDetails extends Record<string, Event | any>> exte
         event: EventOrCustom<TDetails[K]>
     ): boolean { return super.dispatchEvent(event) }
 }
+
+export type HTML<K extends keyof HTMLElementTagNameMap | void = void> =
+    K extends keyof HTMLElementTagNameMap
+    ? HTMLElementTagNameMap[K]
+    : HTMLElement
