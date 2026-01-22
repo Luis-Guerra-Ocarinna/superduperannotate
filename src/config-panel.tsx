@@ -8,13 +8,14 @@ export type ConfigPanelProps = {
     config: Config
 } & Omit<FloatingPanelProps, 'children'> & {}
 
+// BUGFIX: sometimes it loose track of invalidState/effect
 export const ConfigPanel: Component<ConfigPanelProps> = (props) => {
     const [config, setConfig] = createStore(props.config)
 
-    const keys = Object.keys(config) as Array<keyof Config>
+    const keys = Object.keys(config).filter(k => !k.startsWith('_')) as Array<keyof Config>
     const prettify = (v: unknown) => {
         if (v === undefined) return ''
-        return JSON.stringify(v, null, 4)
+        return JSON.stringify(v, null, 4).replaceAll('\\n', '\n')
     }
 
     const [values, setValues] = createStore(
@@ -34,12 +35,19 @@ export const ConfigPanel: Component<ConfigPanelProps> = (props) => {
         )
     )
 
-
     function onInput(key: keyof Config, raw: string) {
         setValues(key, raw)
 
+        raw = raw
+            .trim()
+            .replace(
+                /"(?:[^"\\]|\\.)*"/gs,
+                match => match.replace(/\r?\n/g, '\\n')
+            )
+
         try {
-            const parsed = raw.trim() ? JSON.parse(raw) : undefined
+            // TODO: support undefined/empty
+            const parsed = raw ? JSON.parse(raw) : ''
             // TODO: verify why some times it keeps the invalidState as true
             setInvalidStates(key, false)
             setConfig(key, parsed)
@@ -71,6 +79,8 @@ export const ConfigPanel: Component<ConfigPanelProps> = (props) => {
         'font-size': 'x-large',
     }
     const textareaBase: JSX.CSSProperties = {
+        'white-space': 'pre',
+        'resize': 'both',
         padding: '10px',
         'border-radius': '8px',
         'background-color': 'hsl(220, 30%, 10%)',

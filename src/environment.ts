@@ -38,16 +38,15 @@ export class Config {
     // TODO: better way to save bindings
     // for now just saving in custom code
 
-    #storage: Storage
-    constructor(storage: Storage) {
-        this.#storage = storage
+    constructor(private _storage: Storage) {
         this.load()
     }
 
     load() {
         for (const key in this) {
             if (!Object.hasOwn(this, key)) continue
-            const value = this.#storage.get(key)
+            if (key.startsWith('_')) continue
+            const value = this._storage.get(key)
 
             // since it has default values defined in class,
             // probably it will never be undefined (unless the storage is changed manually)
@@ -60,9 +59,10 @@ export class Config {
     save() {
         for (const key in this) {
             if (!Object.hasOwn(this, key)) continue
+            if (key.startsWith('_')) continue
             const value = this[key]
 
-            this.#storage.set(key, JSON.stringify(value))
+            this._storage.set(key, JSON.stringify(value))
         }
     }
 }

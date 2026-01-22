@@ -127,6 +127,8 @@ export const FloatingPanel: Component<FloatingPanelProps> = (props) => {
         'z-index': 9999,
         cursor: 'grab',
         background: 'gray',
+        'max-width': 'calc(100vw - 25px)',
+        'max-height': 'calc(100vh - 50px)',
     }
     const hideStyle: JSX.CSSProperties = {
         position: 'absolute',
@@ -145,6 +147,9 @@ export const FloatingPanel: Component<FloatingPanelProps> = (props) => {
         overflow: 'auto',
         height: 'calc(100% - 48px)',
         width: 'calc(100% - 8px)',
+        // TODO: not fully working as expected
+        'max-width': 'calc(100vw - 25px - 48px)',
+        'max-height': 'calc(100vh - 50px - 8px)',
     }
     const resizeStyle: JSX.CSSProperties = {
         position: 'absolute',
