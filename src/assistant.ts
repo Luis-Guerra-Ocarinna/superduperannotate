@@ -1,8 +1,8 @@
 import globals from './globals'
-import { assert, TypedEventTarget } from './utils'
+import { assert, TypedEventTarget, type HTML } from './utils'
 
 const objContextEmitter = new TypedEventTarget<{
-    'open': Element
+    'open': HTMLDivElement
 }>()
 
 const objContext$ = new MutationObserver((mutations, _observer) => {
@@ -15,22 +15,20 @@ const objContext$ = new MutationObserver((mutations, _observer) => {
                                 > ng-component > div.object-context-menu-container`)
             if (!$context) continue
 
+            assert($context instanceof HTMLDivElement)
+
             objContextEmitter.dispatchEvent(new CustomEvent('open', { detail: $context }))
+            return
         }
     }
 })
 
 objContextEmitter.addEventListener('open', ({ detail: $objectContext }) => {
-    const $focusable = $objectContext
-        .querySelector<HTMLInputElement | HTMLTextAreaElement>(`
+    const $focusable = $objectContext.querySelector<HTML<'input' | 'textarea'>>(`
             object-details > div > div.tab-contents
             > object-details-attributes > sa-editor-attributes-list
-            > div.attributes > attribute-group :is(input, textarea)`)
-        // .querySelector<HTMLInputElement | HTMLTextAreaElement>(`
-        //     object-details > div > div.tab-contents
-        //     > object-details-attributes > sa-editor-attributes-list
-        //     > div.attributes > attribute-group:nth-child(2) :is(input, textarea)`)
-        || $objectContext.querySelector<HTMLTextAreaElement>(`
+            > div.attributes > attribute-group:nth-child(${1}) :is(input, textarea)`)
+        || $objectContext.querySelector<HTML<'textarea'>>(`
             sa-editor-class-select > sn-select
             div.sn-value-container > div.sn-select-input
             textarea`)
