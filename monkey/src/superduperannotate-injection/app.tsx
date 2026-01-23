@@ -1,9 +1,16 @@
 import * as assistant from 'superduperannotate/assistant'
 import * as extensions from 'superduperannotate/extensions'
 
-import { BindingManager } from 'superduperannotate/bindings'
+import { createSignal } from 'solid-js'
+import { Bind, BindingManager } from 'superduperannotate/bindings'
+import { ConfigPanel } from 'superduperannotate/config-panel'
+import { Config, } from 'superduperannotate/environment'
 import { toast } from 'superduperannotate/toaster'
-import { sleep, type HTML } from 'superduperannotate/utils'
+import { renderFreely, sleep, type HTML } from 'superduperannotate/utils'
+import { MonkeyStorage } from './monkey-storage'
+
+const storage = new MonkeyStorage()
+const config = new Config(storage)
 
 const binds = new BindingManager({
   'A -b': extensions.panels.toggleRight,
@@ -115,6 +122,15 @@ const binds = new BindingManager({
   },
 })
 
+const [showConfig, setShowConfig] = createSignal(false)
+renderFreely(() => <ConfigPanel
+  config={config}
+  visible={showConfig()}
+  onVisibilityChange={setShowConfig}
+/>)
+const toggleConfig = () => setShowConfig(p => !p)
+binds.set(new Bind().ctrl().key('- '), toggleConfig)
+
 //TODO: bindingManager should accept modifiers alone and other events to listen
 // and prevent when typing on inputs
 let altPressed = false
@@ -170,10 +186,21 @@ GM.addStyle(`
     }
 `)
 
+const expose = {
+  assistant,
+  extensions,
+  binds,
+  storage,
+  config,
+  toast,
+  GM,
+  unsafeWindow,
+}
+
 export async function main() {
   binds.listen(document.body)
 
   assistant.start()
 }
 
-unsafeWindow['BINDS'] = binds
+export default expose

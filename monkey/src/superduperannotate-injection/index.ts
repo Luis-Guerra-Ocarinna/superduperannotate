@@ -1,10 +1,14 @@
 import { observe } from '@violentmonkey/dom';
+import { runCustomCode } from 'superduperannotate';
 import './app';
-import { main } from './app';
+import expose, { main } from './app';
 import './meta.js?userscript-metadata';
 
 const start = () => {
+  unsafeWindow['superduperannotate'] = expose
+
   main()
+  runCustomCode(expose.config, expose)
 }
 
 let ran = false

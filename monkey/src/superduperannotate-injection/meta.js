@@ -6,7 +6,10 @@
 // @match       https://vector.superannotate.com/*
 // @grant       GM.addStyle
 // @grant       GM.xmlHttpRequest
-// @version     0.2.0
+// @grant       GM_getValue
+// @grant       GM_setValue
+// @grant       GM_deleteValue
+// @version     0.2.1
 // @author      process.env.AUTHOR
 // @require     https://cdn.jsdelivr.net/npm/@violentmonkey/dom@2
 // @require     https://cdn.jsdelivr.net/npm/@violentmonkey/ui@0.7
