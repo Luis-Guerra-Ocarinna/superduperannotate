@@ -1,18 +1,11 @@
 // ==UserScript==
-// @name        SuperDuper Annotate
+// @name        SuperDuper Annotate - Magic Select Override
 // @namespace   
 // @description 
 // @icon        https://www.google.com/s2/favicons?sz=64&domain=app.superannotate.com
-// @match       https://vector.superannotate.com/*
-// @grant       GM.addStyle
-// @grant       GM.xmlHttpRequest
-// @grant       GM_getValue
-// @grant       GM_setValue
-// @grant       GM_deleteValue
-// @version     0.3.0
+// @match       https://editor.superannotate.com/*
+// @version     0.1.0
 // @author      process.env.AUTHOR
-// @require     https://cdn.jsdelivr.net/npm/@violentmonkey/dom@2
-// @require     https://cdn.jsdelivr.net/npm/@violentmonkey/ui@0.7
 // ==/UserScript==
 
 /**

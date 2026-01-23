@@ -15,6 +15,7 @@ const extensions = ['.ts', '.tsx', '.mjs', '.js', '.jsx'];
 export default defineConfig(
   Object.entries({
     'superduperannotate': 'src/superduperannotate-injection/index.ts',
+    'superduperannotate-magic': 'src/superduperannotate-magic-injection/index.ts',
   }).map(([name, entry]) => ({
     input: entry,
     plugins: [

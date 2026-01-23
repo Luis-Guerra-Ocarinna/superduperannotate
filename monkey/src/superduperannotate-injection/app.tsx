@@ -120,6 +120,40 @@ const binds = new BindingManager({
       toast('error', { background: 'crimson' })
     }
   },
+
+  // prefetch magic select
+  'A -g': async () => {
+    toast('prefetching', { background: 'grey' })
+
+    const done = !!await new Promise((resolve) => {
+      const _superduperannotate = 'any-value'
+      const id = crypto.randomUUID()
+
+      const handleResponse = (event: MessageEvent) => {
+        if (event.source !== window.parent) return
+
+        const { _superduperannotate, id: responseId, value } = event.data || {}
+
+        if (!_superduperannotate || responseId !== id) return
+
+        window.removeEventListener('message', handleResponse)
+
+        resolve(value)
+      }
+      window.addEventListener('message', handleResponse);
+
+      window.parent.postMessage({
+        _superduperannotate,
+        id,
+        value: document.querySelector<HTML<'img'>>('div.imageWrapper img').src
+      }, '*');
+    })
+
+    if (done)
+      toast('prefetched', { background: 'mediumseagreen' })
+    else
+      toast('couldn\'t prefetch', { background: 'crimson' })
+  }
 })
 
 const [showConfig, setShowConfig] = createSignal(false)
