@@ -1,12 +1,9 @@
 import * as assistant from 'superduperannotate/assistant'
 import * as extensions from 'superduperannotate/extensions'
-import { Bind, BindingManager } from 'superduperannotate/bindings'
-import { sleep } from 'superduperannotate/utils'
 
-type HTML<K extends keyof HTMLElementTagNameMap | void = void> =
-  K extends keyof HTMLElementTagNameMap
-  ? HTMLElementTagNameMap[K]
-  : HTMLElement
+import { BindingManager } from 'superduperannotate/bindings'
+import { toast } from 'superduperannotate/toaster'
+import { sleep, type HTML } from 'superduperannotate/utils'
 
 const binds = new BindingManager({
   'A -b': extensions.panels.toggleRight,
@@ -17,91 +14,40 @@ const binds = new BindingManager({
   'A -a': extensions.panels.toggleItemsDisclosure,
   'A -v': extensions.panels.toggleObjectsVisibility,
 
-  ' m3': () => { extensions.disableHistoryNavigation(); alert('backward prevented') },
-  ' m4': () => { extensions.disableHistoryNavigation(); alert('forward prevented') },
-})
+  ' m4': () => extensions.panels.toggleObjectsVisibility,
+  // send shift + down
+  ' m3': () => document.dispatchEvent(new KeyboardEvent('keyup', { keyCode: 40, shiftKey: true })),
+  // send ctrl + shift + down
+  'C m3': () => document.dispatchEvent(new KeyboardEvent('keyup', { keyCode: 40, shiftKey: true, ctrlKey: true })),
 
-GM.addStyle(`
-    .instance-tooltip-overridden {
-      top: var(--tooltip-top, auto) !important;
-      left: var(--tooltip-left, auto) !important;
-      bottom: var(--tooltip-bottom, auto) !important;
-      right: var(--tooltip-right, auto) !important;
-    }
+  // TODO: receive correct stage names from each project type/id
+  // WARN: assuming specific order
+  // approve image
+  'A -f': async () => {
+    document.querySelector<HTML>('sa-editor-workflow[data-qa-id=transitions] button').click()
+    await sleep(10)
+    document.querySelector<HTML>('div[id^=dropdown-menu-panel] > div.sn-dropdown-menu-content div[sndropdownitem]').click()
+  },
+  // reject image
+  'A -r': async () => {
+    document.querySelector<HTML>('sa-editor-workflow[data-qa-id=transitions] button').click()
+    await sleep(10)
+    document.querySelector<HTML>('div[id^=dropdown-menu-panel] > div.sn-dropdown-menu-content div[sndropdownitem]:nth-child(2)').click()
+  },
 
-    .object-context-menu-container {
-        max-height: unset !important;
-    }
-
-    .select-dropdown-panel .select-dropdown-panel-items {
-        max-height: 300px !important;
-    }
-`)
-
-export async function main() {
-  assistant.start()
-
-  //TODO: keybindings should accept modifiers alone and other events to listen
-  // and prevent when typing on inputs
-  let altPressed = false
-  let shiftPressed = false
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Alt') altPressed = true
-    if (e.key === 'Shift') shiftPressed = true
-
-    const $tooltip = document.querySelector<HTML>('.instance-tooltip')
-    if (!$tooltip) return
-
-    switch (true) {
-      case (altPressed && shiftPressed):
-        $tooltip.classList.add('instance-tooltip-overridden')
-        $tooltip.style.setProperty('--tooltip-top', '16vh')
-        $tooltip.style.setProperty('--tooltip-left', '56vw')
-        $tooltip.style.setProperty('--tooltip-bottom', 'unset')
-        $tooltip.style.setProperty('--tooltip-right', 'unset')
-        break
-      case (altPressed && !shiftPressed): {
-        const rect = $tooltip.getBoundingClientRect()
-        $tooltip.classList.add('instance-tooltip-overridden')
-        $tooltip.style.setProperty('--tooltip-top', rect.top + 'px')
-        $tooltip.style.setProperty('--tooltip-left', rect.left + 'px')
-        $tooltip.style.setProperty('--tooltip-bottom', 'unset')
-        $tooltip.style.setProperty('--tooltip-right', 'unset')
-        break
-      }
-    }
-  })
-  document.addEventListener('keyup', e => {
-    if (e.key === 'Alt') altPressed = false
-    if (e.key === 'Shift') shiftPressed = false
-
-    const $tooltip = document.querySelector<HTML>('.instance-tooltip')
-    if (!$tooltip) return
-
-    // When no modifiers are held, remove override
-    if (!altPressed && !shiftPressed) {
-      $tooltip.classList.remove('instance-tooltip-overridden')
-      $tooltip.style.removeProperty('--tooltip-top')
-      $tooltip.style.removeProperty('--tooltip-left')
-      $tooltip.style.removeProperty('--tooltip-bottom')
-      $tooltip.style.removeProperty('--tooltip-right')
-    }
-  })
-
-  binds.listen(document.body)
-
-  binds.set(new Bind().ctrl().key('-D'), async () => {
+  // dele all objects
+  'C -D': async () => {
     extensions.panels.selectObjects()
     await sleep(50)
 
-    const $delAll = document.querySelector<HTML>('app-right-panel action-bar button[data-qa-id="delete-all-button"]')
+    const $delAll = document.querySelector<HTML>('app-right-panel action-bar button[data-qa-id=delete-all-button]')
     $delAll.click()
 
     extensions.panels.selectTags()
-  })
+  },
 
   // cycle class visibility
-  binds.set('A -q', () => {
+  'A -q': () => {
     const $eyes = document.querySelectorAll<HTML>('app-right-panel virtual-scroller object-class-group sn-icon[data-qa-id=class-group-visibility-button]').values()
     for (const $eye of $eyes) {
       if ($eye.querySelector('use[*|href$=open]')) {
@@ -112,74 +58,122 @@ export async function main() {
     }
 
     document.querySelector<HTML>('app-right-panel virtual-scroller object-class-group sn-icon[data-qa-id=class-group-visibility-button]').click()
-  })
-
-  const toastCopy = async (text: string, color: string) => {
-    const msg = document.createElement('div')
-    msg.textContent = text
-    Object.assign(msg.style, {
-      position: 'fixed',
-      bottom: '20px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      background: color,
-      color: '#fff',
-      padding: '8px 12px',
-      borderRadius: '4px',
-      fontFamily: 'sans-serif',
-      zIndex: 9999,
-      opacity: 1,
-      transition: 'opacity 0.5s ease',
-    })
-    document.body.appendChild(msg)
-    await sleep(2000)
-    msg.style.opacity = '0'
-    await sleep(500)
-    msg.remove()
-  }
+  },
 
   // copy image name
-  binds.set('A -c', async () => {
-    const imgName = decodeURIComponent(
-      new URL(document.querySelector<HTML<'img'>>('img[src*=photo_]').src)
-        .pathname
-        .split('/')
-        .pop()
-    )
-      .split('/')
-      .pop()
-      .replace(/\.\w+$/, '')
+  'A -c': async () => {
+    const imgSrc = document.querySelector<HTML<'img'>>('div.imageWrapper img').src
+    const imgName =
+      imgSrc.includes('assets.superannotate.com')
+        ? document.querySelector<HTML<'img'>>('app-bottom-bar div.image-container.selected img').alt
+        : imgSrc.includes('blob.core.windows.net')
+          ? decodeURIComponent(
+            new URL(imgSrc)
+              .pathname
+              .split('/')
+              .pop()
+          ).split('/').pop()
+          : undefined
+
+    if (!imgName) return toast(`couldn't find image name`, { background: 'crimson' })
+
     await navigator.clipboard.writeText(imgName)
 
-    toastCopy('Copied', 'mediumseagreen')
-  })
-
+    toast('copied', { background: 'mediumseagreen' })
+  },
   // copy image
-  // NOTE: needs a local proxy
-  binds.set('A -C', async () => {
-    const fetchProxied = (url: string) => fetch('http://localhost:3000/?target=' + encodeURIComponent(url), { method: 'GET' })
+  'A -C': async () => {
+    const fetchImageBlob: (url: string) => Promise<Blob> = async (url) => {
+      // NOTE: needs a local proxy
+      // const response = await fetch('http://localhost:3000/?target=' + encodeURIComponent(url), { method: 'GET' })
+      // const blob = await response.blob()
+      const blob = await new Promise<Blob>((resolve, reject) => GM.xmlHttpRequest({
+        url,
+        onload: (resp) => {
+          if (resp.status < 200 || resp.status >= 300)
+            return reject(new Error(`HTTP ${resp.status}: ${resp.statusText}`))
+
+          resolve(resp.response as Blob)
+        },
+        onerror: reject,
+        responseType: 'blob'
+      }))
+
+      const imageBlob = new Blob([blob], { type: 'image/png' })
+      return imageBlob
+    }
 
     try {
-      const response = await fetchProxied(document.querySelector<HTML<'img'>>('.imageWrapper img').src)
-      const arrayBuffer = await response.arrayBuffer()
-      // function detectImageType(buffer) {
-      // 	const arr = new Uint8Array(buffer.slice(0, 4))
-      // 	if (arr[0] === 0x89 && arr[1] === 0x50 && arr[2] === 0x4E && arr[3] === 0x47) return 'image/png'
-      // 	if (arr[0] === 0xFF && arr[1] === 0xD8) return 'image/jpeg'
-      // 	if (arr[0] === 0x47 && arr[1] === 0x49 && arr[2] === 0x46) return 'image/gif'
-      // 	return 'application/octet-stream'
-      // }
-      // const mimeType = detectImageType(arrayBuffer)
-      const mimeType = 'image/png'
-      const blob = new Blob([arrayBuffer], { type: mimeType })
-
-      await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })])
-      toastCopy('Copied Image', 'gold')
+      const imageBlob = await fetchImageBlob(document.querySelector<HTML<'img'>>('.imageWrapper img').src)
+      const clipItem = new ClipboardItem({ [imageBlob.type]: imageBlob })
+      await navigator.clipboard.write([clipItem])
+      toast('copied Image', { background: 'gold' })
     } catch (error) {
       console.error('Failed to copy image:', error)
-      toastCopy('Error', 'crimson')
+      toast('error', { background: 'crimson' })
     }
-  })
+  },
+})
+
+//TODO: bindingManager should accept modifiers alone and other events to listen
+// and prevent when typing on inputs
+let altPressed = false
+let shiftPressed = false
+document.addEventListener('keydown', e => {
+  if (e.key === 'Alt') altPressed = true
+  if (e.key === 'Shift') shiftPressed = true
+
+  const $tooltip = document.querySelector<HTML>('.instance-tooltip')
+  if (!$tooltip) return
+
+  switch (true) {
+    case (altPressed && shiftPressed):
+      $tooltip.classList.add('instance-tooltip-overridden')
+      $tooltip.style.setProperty('--tooltip-top', '16vh')
+      $tooltip.style.setProperty('--tooltip-left', '56vw')
+      $tooltip.style.setProperty('--tooltip-bottom', 'unset')
+      $tooltip.style.setProperty('--tooltip-right', 'unset')
+      break
+    case (altPressed && !shiftPressed): {
+      const rect = $tooltip.getBoundingClientRect()
+      $tooltip.classList.add('instance-tooltip-overridden')
+      $tooltip.style.setProperty('--tooltip-top', rect.top + 'px')
+      $tooltip.style.setProperty('--tooltip-left', rect.left + 'px')
+      $tooltip.style.setProperty('--tooltip-bottom', 'unset')
+      $tooltip.style.setProperty('--tooltip-right', 'unset')
+      break
+    }
+  }
+})
+document.addEventListener('keyup', e => {
+  if (e.key === 'Alt') altPressed = false
+  if (e.key === 'Shift') shiftPressed = false
+
+  const $tooltip = document.querySelector<HTML>('.instance-tooltip')
+  if (!$tooltip) return
+
+  // When no modifiers are held, remove override
+  if (!altPressed && !shiftPressed) {
+    $tooltip.classList.remove('instance-tooltip-overridden')
+    $tooltip.style.removeProperty('--tooltip-top')
+    $tooltip.style.removeProperty('--tooltip-left')
+    $tooltip.style.removeProperty('--tooltip-bottom')
+    $tooltip.style.removeProperty('--tooltip-right')
+  }
+})
+GM.addStyle(`
+    .instance-tooltip-overridden {
+      top: var(--tooltip-top, auto) !important;
+      left: var(--tooltip-left, auto) !important;
+      bottom: var(--tooltip-bottom, auto) !important;
+      right: var(--tooltip-right, auto) !important;
+    }
+`)
+
+export async function main() {
+  binds.listen(document.body)
+
+  assistant.start()
 }
 
 unsafeWindow['BINDS'] = binds
